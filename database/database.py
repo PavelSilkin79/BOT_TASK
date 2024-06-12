@@ -1,8 +1,3 @@
-# Создаем шаблон заполнения словаря с пользователями
-user_dict_template = {
-    'page': 1,
-    'bookmarks': set()
+users_db: dict[int, dict[str, str | int | bool]] = {
+    
 }
-
-# Инициализируем "базу данных"
-users_db = {}

@@ -1,5 +1,6 @@
 from aiogram import Router
 from aiogram.types import Message
+from lexicon.lexicon import LEXICON
 
 router = Router()
 
@@ -8,4 +9,4 @@ router = Router()
 # не предусмотренные логикой работы бота
 @router.message()
 async def send_echo(message: Message):
-    await message.answer(f'Это эхо! {message.text}')
+    await message.answer(text=LEXICON['other_answer'])
