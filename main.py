@@ -8,7 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from handlers import other_handlers, user_handlers
 from keyboards.main_menu import set_main_menu
-
+from aiogram.fsm.storage.memory import MemoryStorage
 
 
 
@@ -37,7 +37,8 @@ async def main():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     
-    dp = Dispatcher()
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
 
    
     # Настраиваем главное меню бота

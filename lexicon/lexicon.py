@@ -44,7 +44,7 @@ LEXICON: dict[str, str] = {
 
 
 LEXICON_COMMANDS: dict[str, str] = {
-    '/beginning': 'В начало книги',
+    '/start': 'Старт',
     '/continue': 'Продолжить чтение',
     '/bookmarks': 'Мои закладки',
     '/help': 'Справка по работе бота'

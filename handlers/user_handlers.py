@@ -3,16 +3,16 @@ import random
 
 from copy import deepcopy
 
-from aiogram import F, Router
+from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.filters import Command, CommandStart, StateFilter
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message, CallbackQuery
 from lexicon.lexicon import LEXICON
-from keyboards.keyboards import game_kb, en_ru_kb, language_keyboard
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from keyboards.keyboards import  create_inline_kb
 from database.database import users_db
+
+
 
 router = Router()
 
@@ -26,16 +26,14 @@ class Form(StatesGroup):
 
 
 
-# Этот хэндлер будет срабатывать на команду /start вне состояний
-# и предлагать перейти к заполнению анкеты, отправив команду /fillform
+# Этот хэндлер будет срабатывать на команду /start 
 @router.message(CommandStart(), StateFilter(default_state))
 async def process_start_command(message: Message):
- #   if message.from_user.id not in users_db:
-  #      users_db[message.from_user.id] = {
-   #         'id': message.from_user.id,
-    #        'name': message.from_user.first_name
+    user_id = message.from_user.id
+    user_name = message.from_user.username
 
-     #   }
+    # Добавляем данные пользователа в словпарь
+    users_db[user_id] = {'user_name': user_name}
 
     await message.answer(text=LEXICON['/start'])
     print(users_db)
@@ -46,45 +44,41 @@ async def process_start_command(message: Message):
 async def process_help_command(message: Message):
     await message.answer(text=f'{LEXICON['/help']}')
 
+# Этот хэндлер будет срабатывать на команду "/continue"
+# и предлогать поьзователю решить капчу
 @router.message(Command(commands='continue'))
 async def process_continue_command(message: Message, state: FSMContext):
     num1 = random.randint(10, 99)
     num2 = random.randint(10, 99)
     operation = random.choice(['+', '-'])
-    if operation == '+': 
-        answer = num1 + num2
-    else:
-        answer = num1 - num2
+    answer = num1 + num2 if operation == '+' else num1 - num2
 
-    # Save captcha answer in user data
-    await state.set_state(Form.name)
+    # Сохраняем правильный ответ на капчу в данные пользователя
+    await state.set_state(Form.captcha_answer)
     await state.update_data(captcha_answer=answer)
     question = f"What is {num1} {operation} {num2}?"
 
     await message.answer(text= f'{LEXICON['capcha']}\n{question}')
 
 
-    # Captcha response handler
-@router.message(lambda message: message.text.isdigit())
+    # Хендлер для проверки ответа на капчу
+@router.message(lambda message: message.text.isdigit(), StateFilter(Form.captcha_answer))
 async def check_captcha(message: Message, state: FSMContext):
     user_answer = int(message.text)
-    await state.set_state(Form.name)
     user_data = await state.get_data()
 
     if user_answer == user_data.get('captcha_answer'):
-        
-        await message.answer('✅', reply_markup=en_ru_kb)
+        await message.answer('✅', reply_markup=create_inline_kb(2, 'en_button', 'ru_button'))
     else:
         await message.answer(text=LEXICON['no'])
 
-# Language selection handler
-@router.message(lambda message: message.text in ['English', 'Русский'])
-async def choose_language(message: Message, state: FSMContext):
-    chosen_language = message.text
-    await state.set_state(Form.name)
+# Хендлер для выбора языка
+@router.callback_query(lambda callback_query: callback_query.data in ['en_button', 'ru_button'])
+async def choose_language(callback_query: types.CallbackQuery, state: FSMContext):
+    chosen_language = callback_query.data 
     await state.update_data(language=chosen_language)
 
-    if chosen_language == 'English':
-        await message.answer(text= f'{LEXICON['English']}\n{message.from_user.first_name}{LEXICON['English1']}')
-    elif chosen_language == 'Русский':
-        await message.answer(text= f'{LEXICON['Русский']}\n{message.from_user.first_name}{LEXICON['Русский1']}')
+    if chosen_language == 'en_button':
+        await callback_query.message.answer(text= f'{LEXICON['English']} \n{callback_query.from_user.username}, {LEXICON['English1']}')
+    elif chosen_language == 'ru_button':
+        await callback_query.message.answer(text= f'{LEXICON['Русский']}\n{callback_query.from_user.username}{LEXICON['Русский1']}')

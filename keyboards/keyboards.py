@@ -1,45 +1,33 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from lexicon.lexicon import LEXICON
 
-# ------- Создаем клавиатуру через ReplyKeyboardBuilder -------
 
-# Создаем кнопки с ответами согласия и отказа
-en_button = KeyboardButton(text=LEXICON['en_button'])
-ru_button = KeyboardButton(text=LEXICON['ru_button'])
+# Функция для генерации инлайн-клавиатур "на лету"
+def create_inline_kb(width: int,
+                     *args: str,
+                     **kwargs: str) -> InlineKeyboardMarkup:
+    # Инициализируем билдер
+    en_ru_kb_builder = InlineKeyboardBuilder()
+    # Инициализируем список для кнопок
+    buttons: list[InlineKeyboardButton] = []
 
-# Инициализируем билдер для клавиатуры с кнопками "Давай" и "Не хочу!"
-en_ru_kb_builder = ReplyKeyboardBuilder()
+    # Заполняем список кнопками из аргументов args и kwargs
+    if args:
+        for button in args:
+            buttons.append(InlineKeyboardButton(
+                text=LEXICON[button] if button in LEXICON else button,
+                callback_data=button))
+    if kwargs:
+        for button, text in kwargs.items():
+            buttons.append(InlineKeyboardButton(
+                text=text,
+                callback_data=button))
 
-# Добавляем кнопки в билдер с аргументом width=2
-en_ru_kb_builder.row(en_button, ru_button, width=2)
+    # Распаковываем список с кнопками в билдер методом row c параметром width
+    en_ru_kb_builder.row(*buttons, width=width)
 
-# Создаем клавиатуру с кнопками "Давай!" и "Не хочу!"
-en_ru_kb: ReplyKeyboardMarkup = en_ru_kb_builder.as_markup(
-    one_time_keyboard=True,
-    resize_keyboard=True
-)
+    # Возвращаем объект инлайн-клавиатуры
+    return en_ru_kb_builder.as_markup()
 
-# ------- Создаем игровую клавиатуру без использования билдера -------
-
-# Создаем кнопки игровой клавиатуры
-button_1 = KeyboardButton(text=LEXICON['rock'])
-button_2 = KeyboardButton(text=LEXICON['scissors'])
-button_3 = KeyboardButton(text=LEXICON['paper'])
-
-# Создаем игровую клавиатуру с кнопками "Камень 🗿",
-# "Ножницы ✂" и "Бумага 📜" как список списков
-game_kb = ReplyKeyboardMarkup(
-    keyboard=[[button_1],
-              [button_2],
-              [button_3]],
-    resize_keyboard=True
-)
-language_keyboard = ReplyKeyboardMarkup(
-            keyboard=[
-                [KeyboardButton(text='English'), KeyboardButton(text='Русский')]
-            ],
-            resize_keyboard=True,
-            one_time_keyboard=True
-        )
