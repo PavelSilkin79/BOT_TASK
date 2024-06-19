@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, F
+from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 
 from aiogram.client.default import DefaultBotProperties
@@ -12,22 +12,20 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 
 
-
-# Инициализируем логгер
+    # Конфигурируем логирование
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(asctime)s] #%(levelname)-8s %(filename)s:'
+           '%(lineno)d - %(name)s - %(message)s')
+    
+    # Инициализируем логгер
 logger = logging.getLogger(__name__)
 
+    # Выводим в консоль информацию о начале запуска бота
+#logger.info('Starting bot')
 
 # Функция конфигурирования и запуска бота
 async def main():
-    # Конфигурируем логирование
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(filename)s:%(lineno)d #%(levelname)-8s '
-               '[%(asctime)s] - %(name)s - %(message)s')
-
-    # Выводим в консоль информацию о начале запуска бота
-    logger.info('Starting bot')
-
     # Загружаем конфиг в переменную config
     config: Config = load_config()
 
