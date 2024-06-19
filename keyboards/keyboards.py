@@ -17,9 +17,10 @@ def create_inline_kb(width: int,
     # Заполняем список кнопками из аргументов args и kwargs
     if args:
         for button in args:
-            buttons.append(InlineKeyboardButton(
-                text=LEXICON_RU[button] if button in LEXICON_RU else button,
-                callback_data=button))
+                text=LEXICON_RU.get(button) or LEXICON_EN.get(button) or button 
+                buttons.append(InlineKeyboardButton(
+                    text=text,
+                    callback_data=button))
     if kwargs:
         for button, text in kwargs.items():
             buttons.append(InlineKeyboardButton(
@@ -32,29 +33,3 @@ def create_inline_kb(width: int,
     # Возвращаем объект инлайн-клавиатуры
     return en_ru_kb_builder.as_markup()
 
-# Функция для генерации инлайн-клавиатур "на лету"
-def create_inline_kb(width: int,
-                     *args: str,
-                     **kwargs: str) -> InlineKeyboardMarkup:
-    # Инициализируем билдер
-    en_ru_kb_builder = InlineKeyboardBuilder()
-    # Инициализируем список для кнопок
-    buttons: list[InlineKeyboardButton] = []
-
-    # Заполняем список кнопками из аргументов args и kwargs
-    if args:
-        for button in args:
-            buttons.append(InlineKeyboardButton(
-                text=LEXICON_EN[button] if button in LEXICON_EN else button,
-                callback_data=button))
-    if kwargs:
-        for button, text in kwargs.items():
-            buttons.append(InlineKeyboardButton(
-                text=text,
-                callback_data=button))
-
-    # Распаковываем список с кнопками в билдер методом row c параметром width
-    en_ru_kb_builder.row(*buttons, width=width)
-
-    # Возвращаем объект инлайн-клавиатуры
-    return en_ru_kb_builder.as_markup()

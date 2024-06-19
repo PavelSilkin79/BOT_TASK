@@ -1,6 +1,7 @@
 import random
 
 from aiogram import  Router, Bot
+from config_data.config import Config, load_config
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.filters import Command, CommandStart, StateFilter
@@ -14,6 +15,9 @@ from database.database import users_db
 
 
 router = Router()
+
+# Загружаем конфиг в переменную config
+config: Config = load_config()
 
 class Form(StatesGroup):
     id = State()
@@ -95,10 +99,11 @@ async def choose_language(callback_query: CallbackQuery, state: FSMContext):
     elif chosen_language == 'ru_button':
         await callback_query.message.answer(text= f'{LEXICON_RU['Русский']}\n{callback_query.from_user.username}{LEXICON_RU['Русский1']}')
 
+
 #Обработчик команды проверки подписки
 @router.message(Command(commands='check_ru'))
 async def process_subscription_check_command(message: Message, bot: Bot):
-    chat_id =  '-1002143209588' 
+    chat_id = config.tg_bot.chat_id 
     is_subscribed = await check_subscription(bot, message.from_user.id, chat_id)
     
     if is_subscribed:
@@ -109,20 +114,12 @@ async def process_subscription_check_command(message: Message, bot: Bot):
        # await message.answer('Вы подписанны на канал, можете получать контент!')
     else:
         await message.answer(text='❌ Условия не выполнены!Чтобы получить 50 $GRUM, подпишись на наш канал: @test', reply_markup=create_inline_kb(1, 'check_subscription_ru'))
-         
-       # markup = types.InlineKeyboardMarkup()
-       # markup.add(types.InlineKeyboardButton('Подписаться',
-       #                                       url='https://t.me/+j2z25tbzRF0zNjMy'))
-
-        #await message.answer('Для получения контента необходимо подписаться на канал!',
-        #                 reply_markup=markup)
-        #await message.answer('После подписки напишите любое сообщение для проверки'
 
 
 #Обработчик команды проверки подписки
 @router.message(Command(commands='check_en'))
 async def process_subscription_check_command(message: Message, bot: Bot):
-    chat_id =  '-1002143209588' 
+    chat_id = config.tg_bot.chat_id 
     is_subscribed = await check_subscription(bot, message.from_user.id, chat_id)
     
     if is_subscribed:
@@ -151,7 +148,7 @@ async def handle_connect_to(callback_query: CallbackQuery):
 #Обработчик инлайн кнопки 'connect_to_en'
 @router.callback_query(lambda callback_query: callback_query.data == 'connect_to_en')
 async def handle_connect_to(callback_query: CallbackQuery):
-    await callback_query.message.answer(text=LEXICON_EN['connect_to_en'], reply_markup=create_inline_kb(2, 'connect_en', 'main_menu_en'))
+    await callback_query.message.answer(text=LEXICON_EN['connect_to_en_1'], reply_markup=create_inline_kb(2, 'connect_en', 'main_menu_en'))
 
 
 # Обработчик инлайн кнопки 'connect_en'
