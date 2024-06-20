@@ -1,5 +1,5 @@
 LEXICON_EN: dict[str,str] = {
-    'capcha': 'Welcome! Please solve this captcha to continue:',
+    'capcha': 'Welcome! Please solve this captcha to✅ continue:',
     'project_en':'$GRUM BIG AIRDROP 🚀Your balance: $GRUM 50.00000000$GRUM is a veru improssive project,'
     'because it contaens all de fun you hav un Tulegrum.'
     'Someday in near future $GRUM will hav its own media chonnel that will hav oll de nevs about other'
@@ -22,6 +22,8 @@ LEXICON_EN: dict[str,str] = {
     'connect_to_en': ' 👛  Connect the wallet 👛',
     'main_menu_en': '📃 Main menu',
     'connect_en': '🚀 Start connecting',
-    'en_button': '🔵 English 🔵'
+    'en_button': '🔵 English 🔵',
+    'en_1': '✅',
+    'en_2': '❌'
 
 }   

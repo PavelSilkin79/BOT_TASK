@@ -91,90 +91,77 @@ async def check_captcha(message: Message, state: FSMContext):
 async def choose_language(callback_query: CallbackQuery, state: FSMContext):
     chosen_language = callback_query.data 
     await state.update_data(language=chosen_language)
-
     if chosen_language == 'en_button':
-        
         await callback_query.message.answer(text= f'{LEXICON_EN['English']} \n{callback_query.from_user.username}, {LEXICON_EN['English1']}')
-    
     elif chosen_language == 'ru_button':
         await callback_query.message.answer(text= f'{LEXICON_RU['Русский']}\n{callback_query.from_user.username}{LEXICON_RU['Русский1']}')
 
 
 #Обработчик команды проверки подписки
-@router.message(Command(commands='check_ru'))
-async def process_subscription_check_command(message: Message, bot: Bot):
+@router.message(Command(commands=['check_en', 'check_ru']))
+async def process_subscription_check_command(message: Message, bot: Bot, state: FSMContext):
+    # Определение языка
+    lang = 'en' if message.text.startswith('/check_en') else 'ru'
     chat_id = config.tg_bot.chat_id 
     is_subscribed = await check_subscription(bot, message.from_user.id, chat_id)
     
     if is_subscribed:
-        #await state.set_state(Form.subscription_check)
+        await state.set_state(Form.subscription_check)
         # Устанавливаем состояние "subscription_check"
-        #await state.update_data(subscription_check=True)
-        await message.answer(text=LEXICON_RU['project'], reply_markup=create_inline_kb(3, 'get', 'get_and', 'connect_to'))
-       # await message.answer('Вы подписанны на канал, можете получать контент!')
+        await state.update_data(subscription_check=True)
+        # Создание текста и кнопок в зависимости от языка
+        text=LEXICON_EN['project_en'] if lang == 'en' else LEXICON_RU['project']
+        buttons = ['get_en', 'get_and_en', 'connect_to_en'] if lang == 'en' else ['get', 'get_and', 'connect_to']
+        await message.answer(text=text, reply_markup=create_inline_kb(3, *buttons))
+        # await message.answer('Вы подписанны на канал, можете получать контент!')
     else:
-        await message.answer(text='❌ Условия не выполнены!Чтобы получить 50 $GRUM, подпишись на наш канал: @test', reply_markup=create_inline_kb(1, 'check_subscription_ru'))
+        text='❌ Condition not met!To receive 50 $GRUM subscribe to our channel: @test' if lang == 'en' else '❌ Условия не выполнены!Чтобы получить 50 $GRUM, подпишись на наш канал: @test'
+        await message.answer(text=text, reply_markup=create_inline_kb(1, f'check_subscription_{lang}'))
 
 
-#Обработчик команды проверки подписки
-@router.message(Command(commands='check_en'))
-async def process_subscription_check_command(message: Message, bot: Bot):
-    chat_id = config.tg_bot.chat_id 
-    is_subscribed = await check_subscription(bot, message.from_user.id, chat_id)
-    
-    if is_subscribed:
-        #await state.set_state(Form.subscription_check)
-        # Устанавливаем состояние "subscription_check"
-        #await state.update_data(subscription_check=True)
-        await message.answer(text=LEXICON_EN['project_en'], reply_markup=create_inline_kb(3, 'get_en', 'get_and_en', 'connect_to_en'))
-       # await message.answer('Вы подписанны на канал, можете получать контент!')
-    else:
-        await message.answer(text='❌ Condition not met!To receive 50 $GRUM subscribe to our channel: @test', reply_markup=create_inline_kb(1, 'check_subscription_en'))
-         
-       # markup = types.InlineKeyboardMarkup()
-       # markup.add(types.InlineKeyboardButton('Подписаться',
-       #                                       url='https://t.me/+j2z25tbzRF0zNjMy'))
-
-        #await message.answer('Для получения контента необходимо подписаться на канал!',
-        #                 reply_markup=markup)
-        #await message.answer('После подписки напишите любое сообщение для проверки'
-
-
-#Обработчик инлайн кнопки 'connect_to_ru'
-@router.callback_query(lambda callback_query: callback_query.data == 'connect_to')
+#Обработчик инлайн кнопки 'connect_to_ru_en'
+@router.callback_query(lambda callback_query: callback_query.data in ['connect_to', 'connect_to_en'])
 async def handle_connect_to(callback_query: CallbackQuery):
-    await callback_query.message.answer(text=LEXICON_RU['connect_to_ru'], reply_markup=create_inline_kb(2, 'connect', 'main_menu'))
-
-#Обработчик инлайн кнопки 'connect_to_en'
-@router.callback_query(lambda callback_query: callback_query.data == 'connect_to_en')
-async def handle_connect_to(callback_query: CallbackQuery):
-    await callback_query.message.answer(text=LEXICON_EN['connect_to_en_1'], reply_markup=create_inline_kb(2, 'connect_en', 'main_menu_en'))
+    lang = 'en' if callback_query.data == 'connect_to_en' else 'ru'
+    text = LEXICON_EN['connect_to_en_1'] if lang == 'en' else LEXICON_RU['connect_to_ru_1']
+    buttons = ['connect_en', 'main_menu_en'] if lang =='en' else ['connect', 'main_menu']
+    await callback_query.message.answer(text=text, reply_markup=create_inline_kb(2, *buttons))
 
 
-# Обработчик инлайн кнопки 'connect_en'
-@router.callback_query(lambda callback_query: callback_query.data == 'connect_en')
+# Обработчик инлайн кнопки 'connect_ru_en'
+@router.callback_query(lambda callback_query: callback_query.data in ['connect_en', 'connect'])
 async def handle_connect(callback_query: CallbackQuery):
+    lang =  'en' if callback_query.data == 'connect_en' else 'ru'
+    text = LEXICON_EN['connect_en_1'] if lang == 'en' else LEXICON_RU['connect_ru_1']
+    buttons = ['en_1', 'en_2'] if lang =='en' else ['ru_1', 'ru_2']
+    await callback_query.message.answer(text=text, reply_markup=create_inline_kb(2, *buttons))
 
-    await callback_query.message.answer(text=LEXICON_EN['connect_en_1'])
-    await callback_query.message.answer(text=LEXICON_EN['connect_en_2'], reply_markup=create_inline_kb(1,'main_menu_en'))
-
-# Обработчик инлайн кнопки 'connect_ru'
-@router.callback_query(lambda callback_query: callback_query.data == 'connect')
+# Обработчик инлайн кнопки 'connect_ru_en✅'
+@router.callback_query(lambda callback_query: callback_query.data in ['en_1', 'ru_1'])
 async def handle_connect(callback_query: CallbackQuery):
+    lang =  'en' if callback_query.data == 'en_1' else 'ru'
+    text = LEXICON_EN['connect_en_2'] if lang == 'en' else LEXICON_RU['connect_ru_2']
+    buttons = ['main_menu_en'] if lang =='en' else ['main_menu']
+    await callback_query.message.answer(text=text, reply_markup=create_inline_kb(1, *buttons)) 
 
-    await callback_query.message.answer(text=LEXICON_RU['connect_ru_1'])
-    await callback_query.message.answer(text=LEXICON_RU['connect_ru_2'], reply_markup=create_inline_kb(1,'main_menu'))
+
+# Обработчик инлайн кнопки 'connect_ru_en❌'
+@router.callback_query(lambda callback_query: callback_query.data in ['en_2', 'ru_2'])
+async def handle_connect(callback_query: CallbackQuery):
+    lang =  'en' if callback_query.data == 'en_2' else 'ru'
+    text = LEXICON_EN['connect_to_en_1'] if lang == 'en' else LEXICON_RU['connect_to_ru_1']
+    buttons = ['connect_en', 'main_menu_en'] if lang =='en' else ['connect', 'main_menu']
+    await callback_query.message.answer(text=text, reply_markup=create_inline_kb(2, *buttons)) 
 
 
 #Обработчик инлайн кнопки 'main_menu''
-@router.callback_query(lambda callback_query: callback_query.data == 'main_menu')
+@router.callback_query(lambda callback_query: callback_query.data in ['main_menu', 'main_menu_en'])
 async def handle_main_menu(callback_query: CallbackQuery):
-    await callback_query.message.answer(text=LEXICON_RU['project'], reply_markup=create_inline_kb(3, 'get', 'get_and', 'connect_to'))
+    lang = 'en'if callback_query.data == 'main_menu_en' else 'ru'
+    text = LEXICON_EN['project_en'] if lang == 'en' else LEXICON_RU['project']
+    buttons = ['get_en', 'get_and_en', 'connect_to_en'] if lang =='en' else ['get', 'get_and', 'connect_to']
+    await callback_query.message.answer(text=text, reply_markup=create_inline_kb(3, *buttons))
 
-#Обработчик инлайн кнопки 'main_menu_en''
-@router.callback_query(lambda callback_query: callback_query.data == 'main_menu_en')
-async def handle_main_menu(callback_query: CallbackQuery):
-    await callback_query.message.answer(text=LEXICON_EN['project_en'], reply_markup=create_inline_kb(3, 'get_en', 'get_and_en', 'connect_to_en'))
 
 
 

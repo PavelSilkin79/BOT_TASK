@@ -17,6 +17,7 @@ def create_inline_kb(width: int,
     # Заполняем список кнопками из аргументов args и kwargs
     if args:
         for button in args:
+                            # Проверяем наличие слова в обоих словарях
                 text=LEXICON_RU.get(button) or LEXICON_EN.get(button) or button 
                 buttons.append(InlineKeyboardButton(
                     text=text,
