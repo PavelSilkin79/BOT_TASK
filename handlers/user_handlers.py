@@ -9,7 +9,6 @@ from aiogram.types import Message, CallbackQuery
 from lexicon.lexicon_ru import LEXICON_RU
 from lexicon.lexicon_en import LEXICON_EN
 from keyboards.keyboards import  create_inline_kb
-#from keyboards.pagination_kb import create_pagination_keyboard
 from database.database import users_db
 
 
@@ -81,7 +80,6 @@ async def check_captcha(message: Message, state: FSMContext):
     user_data = await state.get_data()
     if user_answer == user_data.get('captcha_answer'):
         await message.answer(text='Выберите язык, \n Choose a language', reply_markup=create_inline_kb(2, 'en_button', 'ru_button'))
-        
     else:
         await message.answer(text=LEXICON_RU['no'])
 
